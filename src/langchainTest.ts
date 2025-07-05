@@ -1,28 +1,38 @@
-  import { ChatOpenAI } from "@langchain/openai"
-  import { HumanMessage } from "@langchain/core/messages"
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { ChatOpenAI } from "@langchain/openai";
+import { calculadoraTool } from "./tools/calculadoraTool";
+import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
-  const chat = new ChatOpenAI({
+export async function runAgent(input: string): Promise<string> {
+  const model = new ChatOpenAI({
     openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
     modelName: "gpt-4o",
-    temperature: 0.3,
-  })
+    temperature: 0,
+  });
 
-  export async function transformText() {
-    const input = `LangChain.js es una librería de JavaScript que permite construir aplicaciones de lenguaje mediante componentes reutilizables.`
-    
-    // Paso 1: Trraducir al inglés
-    const translation = await chat.call([
-      new HumanMessage(`Traducí al inglés este texto:\n\n${input}`)
-    ])
+  const tools = [calculadoraTool];
 
-    // Paso 2: Resumir el texto traducido
-    const summary = await chat.call([
-      new HumanMessage(`Resumí este texto en una sola oración:\n\n${translation.text}`)
-    ])
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", "Eres un asistente experto que puede resolver cálculos usando la herramienta 'calculadora'."],
+    ["human", "{input}"],
+    ["placeholder", "{agent_scratchpad}"]
+  ]);
 
-    return {
-      original: input,
-      translated: translation.text,
-      summary: summary.text
-    }
-  }
+  const agent = await createOpenAIFunctionsAgent({
+    llm: model,
+    tools,
+    prompt,
+  });
+
+  const executor = new AgentExecutor({
+    agent,
+    tools,
+    verbose: true,
+  });
+
+  const result = await executor.invoke({ input });
+  console.log("🧠 Resultado final del Agent:", result);
+
+  return result.output as string;
+}

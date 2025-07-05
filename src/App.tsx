@@ -1,29 +1,21 @@
 import { useEffect, useState } from "react";
-import { transformText } from "./langchainTest";
-
-interface TransformOutput {
-  original: string;
-  translated: string;
-  summary: string;
-}
+import { runAgent } from "./langchainTest";
 
 function App() {
-  const [output, setOutput] = useState<TransformOutput | null>(null)
+  const [agentOutput, setAgentOutput] = useState<string>("")
 
   useEffect(() => {
-    transformText().then(setOutput)
+    runAgent("¿Cuánto es (23 + 4) * 3?").then(setAgentOutput)
   }, [])
 
-  if (!output) return <p>Cargando...</p>
+  if (!agentOutput) return <p>Pensando...</p>
 
   return (
     <div style={{ padding: 40 }}>
-      <h2>🧪 Chain de Transformación</h2>
-      <p><strong>Original:</strong> {output.original}</p>
-      <p><strong>Traducido:</strong> {output.translated}</p>
-      <p><strong>Resumen:</strong> {output.summary}</p>
+      <h2>🤖 Agent + Tool personalizada</h2>
+      <p><strong>Respuesta del agente:</strong> {agentOutput}</p>
     </div>
-  )
+  );
 }
 
 export default App;
