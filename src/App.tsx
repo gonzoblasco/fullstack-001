@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
-import { simpleChat } from "./langchainTest";
+import { transformText } from "./langchainTest";
+
+interface TransformOutput {
+  original: string;
+  translated: string;
+  summary: string;
+}
 
 function App() {
-  const [respuesta, setRespuesta] = useState('')
+  const [output, setOutput] = useState<TransformOutput | null>(null)
 
   useEffect(() => {
-    simpleChat().then(setRespuesta)
+    transformText().then(setOutput)
   }, [])
+
+  if (!output) return <p>Cargando...</p>
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Prueba LangChain.js</h1>
-      <p><strong>Respuesta del LLM:</strong></p>
-      <p>{respuesta}</p>
+      <h2>🧪 Chain de Transformación</h2>
+      <p><strong>Original:</strong> {output.original}</p>
+      <p><strong>Traducido:</strong> {output.translated}</p>
+      <p><strong>Resumen:</strong> {output.summary}</p>
     </div>
   )
 }

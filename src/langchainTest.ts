@@ -1,15 +1,28 @@
   import { ChatOpenAI } from "@langchain/openai"
   import { HumanMessage } from "@langchain/core/messages"
 
-  export async function simpleChat() {
-    const chat = new ChatOpenAI({
-      openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      modelName: "gpt-4o"
-    })
+  const chat = new ChatOpenAI({
+    openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+    modelName: "gpt-4o",
+    temperature: 0.3,
+  })
 
-    const res = await chat.call([
-      new HumanMessage("¿Cuál es la capital de Francia?")
+  export async function transformText() {
+    const input = `LangChain.js es una librería de JavaScript que permite construir aplicaciones de lenguaje mediante componentes reutilizables.`
+    
+    // Paso 1: Trraducir al inglés
+    const translation = await chat.call([
+      new HumanMessage(`Traducí al inglés este texto:\n\n${input}`)
     ])
 
-    return res.text
+    // Paso 2: Resumir el texto traducido
+    const summary = await chat.call([
+      new HumanMessage(`Resumí este texto en una sola oración:\n\n${translation.text}`)
+    ])
+
+    return {
+      original: input,
+      translated: translation.text,
+      summary: summary.text
+    }
   }
